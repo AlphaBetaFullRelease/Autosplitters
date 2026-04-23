@@ -1,8 +1,3 @@
-// Planned new split options to implement:
-//		1. Split on the Comms Relay cutscene (useful for Text Storage No OoB) - DONE
-//		2. Disable splitting on trinkets when in time trial (useful for All Achievements) - DONE
-//		3. Only split on time trials when V Rank achieved (useful for All Achievements) - TESTING
-
 state("VVVVVV", "unknown") {
 	// Default state
 }
@@ -27,8 +22,14 @@ state("VVVVVV", "v2.4.4") {
 	int teleport_to_x : "VVVVVV.exe", 0x410C00;
 	int teleport_to_y : "VVVVVV.exe", 0x410C04;
 	byte100 collect : "VVVVVV.exe", 0x221790;
-	int timeTrialRank : "VVVVVV.exe", 0x410D30;
-	
+
+	// Time trial variables for calculating V rank
+	// Why not just read the timetrialrank variable? In short, because of race conditions.
+	// We can't reliably read from any variables which are affected by gamestate 82 while also listening out for gamestate 82.
+	int deathCount : "VVVVVV.exe", 0x410B94;
+	int timeTrialShinyTarget : "VVVVVV.exe", 0x410D1C;
+	int timeTrialPar : "VVVVVV.exe", 0x410D24;
+
 	// Variables for resetting
 	int menustate : "VVVVVV.exe", 0x410B5C; // actually called gamestate in source
 	bool ingame_titlemode : "VVVVVV.exe", 0x411566;
@@ -683,12 +684,30 @@ split {
 					
 					if (!settings[vars.requireVRank]) {
 						return settings[vars.ils];
-					}
-				} else if (old.gamestate == 82) { // evil check just to make sure timetrialrank has been updated before we try to read its new value. could be inconsistent, might be better to check for gamestate 83 instead
-					print("The time trial rank is " + current.timeTrialRank); // REMOVE ME!!
-					
-					if (current.timeTrialRank >= 3) { // personally, i think this check should be == 3, but the game checks >= 3 to determine whether or not to award V rank, so the same should be done in the autosplitter
-						return settings[vars.ils];
+					} else {
+						// We have to calculate whether the player has gotten V rank ourselves here, because there's a chance
+						// that at the time the autosplitter notices gamestate == 82, the game hasn't yet itself processed the
+						// new gamestate and finished calculating the player's rank. Yes, I'm aware this is pretty scuffed.
+						// I won't be happy if this works.
+						bool isUnderParTime = (current.gametimeHours * 3600 + current.gametimeMinutes * 60 + current.gametimeSeconds <= current.timeTrialPar);
+						bool isDeathless = (current.deathCount == 0);
+						
+						int collectedTrinkets = 0;
+
+						for (int i = 0; i < 20; i++) {
+							if (current.collect[i] != 0) {
+								collectedTrinkets++;
+							}
+						}
+
+						bool hasEnoughTrinkets = (collectedTrinkets >= current.timeTrialShinyTarget);
+
+						if (isUnderParTime && isDeathless && hasEnoughTrinkets) {
+							return settings[vars.ils];
+						}
+
+						// After testing, I can confirm this works (splits on V rank and doesn't on anything else), and it splits at the proper time.
+						// (My first idea split a frame late.) As predicted, I'm not happy about this; it's even more scuffed than the 100% check on game complete.
 					}
 				}
 			} else if (current.gamestate == 4050 && current.teleport_to_x == 8 && current.teleport_to_y == 11) {
