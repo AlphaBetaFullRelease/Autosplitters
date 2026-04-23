@@ -224,8 +224,8 @@ startup {
 	vars.towerTelejump = "Split on teleporting to the teleporter under Tower";
 
 	vars.allAchievementsParent = "Settings pertaining to All Achievements";
-	vars.disableTimeTrialTrinkets = "Disable splitting on trinkets when in a time trial (v2.4.1+ currently)";
-	vars.requireVRank = "Only split on completing time trials when V Rank is achieved (v2.4.4+ currently)";
+	vars.disableTimeTrialTrinkets = "Disable splitting on trinkets when in a Time Trial (v2.4.1+)";
+	vars.requireVRank = "Only split on completing time trials when V Rank is achieved (v2.4.4+)";
 
 	vars.trinkets = "Split on collecting trinkets";
 	vars.trinketSecretToNobody = "Split on collecting the \"It's a Secret to Nobody\" trinket";
@@ -255,7 +255,7 @@ startup {
 	vars.dis = "Split on talking to Victoria (for DIS)";
 	vars.finalStretch = "Split on Final Level terminal";
 	vars.hello = "Split on \"Hello!\" (for Text Storage and Credits Warp)";
-	vars.commsRelay = "Split on activating the cutscene in Comms Relay (v2.4.1+ currently)";
+	vars.commsRelay = "Split on activating the cutscene in \"Comms Relay\" (v2.4.1+)";
 
 	settings.Add(vars.startresetParent, true);
 	settings.CurrentDefaultParent = vars.startresetParent;
