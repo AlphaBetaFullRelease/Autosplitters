@@ -249,6 +249,7 @@ startup {
 	vars.dis = "Split on talking to Victoria (for DIS)";
 	vars.finalStretch = "Split on Final Level terminal";
 	vars.hello = "Split on \"Hello!\" (for Text Storage and Credits Warp)";
+	vars.commsRelay = "Split on activating the cutscene in Comms Relay";
 
 	settings.Add(vars.startresetParent, true);
 	settings.CurrentDefaultParent = vars.startresetParent;
@@ -309,6 +310,7 @@ startup {
 	settings.Add(vars.dis, false);
 	settings.Add(vars.finalStretch, false);
 	settings.Add(vars.hello, false);
+	settings.Add(vars.commsRelay, false);
 }
 
 init {
@@ -669,6 +671,11 @@ split {
 			} else if (current.gamestate == 4020 && current.teleport_to_x == 0 && current.teleport_to_y == 0) {
 				// Split on teleporting to the teleporter under Lab
 				return settings[vars.labTelejump];
+			} else if (current.gamastate == 31) {
+				if (old.gamestate != 31) {
+					// Split on activating the cutscene in Comms Relay
+					return settings[vars.commsRelay];
+				}
 			}
 		}
 		
