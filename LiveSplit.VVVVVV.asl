@@ -307,8 +307,6 @@ startup {
 }
 
 init {
-	print("The base address is " + modules.First().BaseAddress);
-
 	if (modules.First().ModuleMemorySize == 0x6D9000) {
 		version = "v2.0";
 	} else if (modules.First().ModuleMemorySize == 0x456000) {
