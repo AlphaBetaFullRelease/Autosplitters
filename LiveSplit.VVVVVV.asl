@@ -2,6 +2,32 @@ state("VVVVVV", "unknown") {
 	// Default state
 }
 
+state("VVVVVV", "v2.4.4") {
+	// Game time variables
+	int gametimeFrames : "VVVVVV.exe", 0x410BA0;
+	int gametimeSeconds : "VVVVVV.exe", 0x410BA4;
+	int gametimeMinutes : "VVVVVV.exe", 0x410BA8;
+	int gametimeHours : "VVVVVV.exe", 0x410BAC;
+
+	// Variables for starting the timer
+	bool fadetomode : "VVVVVV.exe", 0x225A34;
+	int gotomode : "VVVVVV.exe", 0x225A38;
+	int timetrialcountdown : "VVVVVV.exe", 0x410D18;
+
+	// Variables for splitting
+	bool finalStretch : "VVVVVV.exe", 0x4136C9;
+	int gamestate : "VVVVVV.exe", 0x410B50; // actually called state in source
+	string255 firstTextLineSmall : "VVVVVV.exe", 0x233980, 0x0;
+	string255 firstTextLineLarge : "VVVVVV.exe", 0x233980, 0x0, 0x0;
+	int teleport_to_x : "VVVVVV.exe", 0x410C00;
+	int teleport_to_y : "VVVVVV.exe", 0x410C04;
+	byte100 collect : "VVVVVV.exe", 0x221790;
+	
+	// Variables for resetting
+	int menustate : "VVVVVV.exe", 0x410B5C; // actually called gamestate in source
+	bool ingame_titlemode : "VVVVVV.exe", 0x411566;
+}
+
 state("VVVVVV", "v2.4.3") {
 	// Game time variables
 	int gametimeFrames : "VVVVVV.exe", 0x40FBA0;
@@ -281,6 +307,8 @@ startup {
 }
 
 init {
+	print("The base address is " + modules.First().BaseAddress);
+
 	if (modules.First().ModuleMemorySize == 0x6D9000) {
 		version = "v2.0";
 	} else if (modules.First().ModuleMemorySize == 0x456000) {
@@ -299,11 +327,13 @@ init {
 		} else if (game.ReadString(IntPtr.Add(modules.First().BaseAddress, 0x19E62C), 6) == "v2.4.3") {
 			version = "v2.4.3";
 		}
+	} else if (modules.First().ModuleMemorySize == 0x443000) {
+		version = "v2.4.4";
 	} else {
 		version = "unknown";
 	}
 
-	if (version == "v2.3.4" || version == "v2.3.6" || version == "v2.4" || version == "v2.4.1" || version == "v2.4.2" || version == "v2.4.3") {
+	if (version == "v2.3.4" || version == "v2.3.6" || version == "v2.4" || version == "v2.4.1" || version == "v2.4.2" || version == "v2.4.3" || version == "v2.4.4") {
 		// No init needed
 	} else if (version == "v2.0" || version == "v2.2") {
 		// Legacy versions
@@ -404,7 +434,7 @@ init {
 }
 
 start {
-	if (version == "v2.3.4" || version == "v2.3.6" || version == "v2.4" || version == "v2.4.1" || version == "v2.4.2" || version == "v2.4.3") {
+	if (version == "v2.3.4" || version == "v2.3.6" || version == "v2.4" || version == "v2.4.1" || version == "v2.4.2" || version == "v2.4.3" || version == "v2.4.4") {
 		// Triggers when fade to new mode completes
 		if (!current.fadetomode && old.fadetomode) {
 			if (current.gotomode == 0) {
@@ -479,7 +509,7 @@ start {
 }
 
 split {
-	if (version == "v2.4.1" || version == "v2.4.2" || version == "v2.4.3") {
+	if (version == "v2.4.1" || version == "v2.4.2" || version == "v2.4.3" || version == "v2.4.4") {
 		// Trinket splits
 		if (settings[vars.trinkets]) {
 			if (current.collect[0] == 1 && old.collect[0] == 0) {
@@ -794,7 +824,7 @@ split {
 }
 
 reset {
-	if (version == "v2.4" || version == "v2.4.1" || version == "v2.4.2" || version == "v2.4.3") {
+	if (version == "v2.4" || version == "v2.4.1" || version == "v2.4.2" || version == "v2.4.3" || version == "v2.4.4") {
 		// menustate values:
 		// 0: in-game
 		// 1: main menu
@@ -863,7 +893,7 @@ reset {
 }
 
 gameTime {
-	if (version == "v2.3.4" || version == "v2.3.6" || version == "v2.4" || version == "v2.4.1" || version == "v2.4.2" || version == "v2.4.3") {
+	if (version == "v2.3.4" || version == "v2.3.6" || version == "v2.4" || version == "v2.4.1" || version == "v2.4.2" || version == "v2.4.3" || version == "v2.4.4") {
 		return new TimeSpan(0, current.gametimeHours, current.gametimeMinutes, current.gametimeSeconds, 100*current.gametimeFrames/3);
 	} else if (version == "v2.0" || version == "v2.2") {
 		// Legacy versions
@@ -882,7 +912,7 @@ update {
 		return false;
 	}
 	
-	if (version == "v2.3.4" || version == "v2.3.6" || version == "v2.4" || version == "v2.4.1" || version == "v2.4.2" || version == "v2.4.3") {
+	if (version == "v2.3.4" || version == "v2.3.6" || version == "v2.4" || version == "v2.4.1" || version == "v2.4.2" || version == "v2.4.3" || version == "v2.4.4") {
 		// No updates needed
 		return true;
 	} else if (version == "v2.0" || version == "v2.2") {
