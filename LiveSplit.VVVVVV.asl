@@ -22,7 +22,14 @@ state("VVVVVV", "v2.4.4") {
 	int teleport_to_x : "VVVVVV.exe", 0x410C00;
 	int teleport_to_y : "VVVVVV.exe", 0x410C04;
 	byte100 collect : "VVVVVV.exe", 0x221790;
-	
+
+	// Time trial variables for calculating V rank
+	// Why not just read the timetrialrank variable? In short, because of race conditions.
+	// We can't reliably read from any variables which are affected by gamestate 82 while also listening out for gamestate 82.
+	int deathCount : "VVVVVV.exe", 0x410B94;
+	int timeTrialShinyTarget : "VVVVVV.exe", 0x410D1C;
+	int timeTrialPar : "VVVVVV.exe", 0x410D24;
+
 	// Variables for resetting
 	int menustate : "VVVVVV.exe", 0x410B5C; // actually called gamestate in source
 	bool ingame_titlemode : "VVVVVV.exe", 0x411566;
@@ -216,6 +223,10 @@ startup {
 	vars.labTelejump = "Split on teleporting to the teleporter under Lab";
 	vars.towerTelejump = "Split on teleporting to the teleporter under Tower";
 
+	vars.allAchievementsParent = "Settings pertaining to All Achievements";
+	vars.disableTimeTrialTrinkets = "Disable splitting on trinkets when in a time trial (v2.4.1+ currently)";
+	vars.requireVRank = "Only split on completing time trials when V Rank is achieved (v2.4.4+ currently)";
+
 	vars.trinkets = "Split on collecting trinkets";
 	vars.trinketSecretToNobody = "Split on collecting the \"It's a Secret to Nobody\" trinket";
 	vars.trinketTrenchWarfare = "Split on collecting the \"Trench Warfare\" trinket";
@@ -244,6 +255,7 @@ startup {
 	vars.dis = "Split on talking to Victoria (for DIS)";
 	vars.finalStretch = "Split on Final Level terminal";
 	vars.hello = "Split on \"Hello!\" (for Text Storage and Credits Warp)";
+	vars.commsRelay = "Split on activating the cutscene in Comms Relay (v2.4.1+ currently)";
 
 	settings.Add(vars.startresetParent, true);
 	settings.CurrentDefaultParent = vars.startresetParent;
@@ -293,6 +305,12 @@ startup {
 	settings.Add(vars.trinketV, false);
 
 	settings.CurrentDefaultParent = vars.hundredpercentParent;
+	settings.Add(vars.allAchievementsParent, false);
+	settings.CurrentDefaultParent = vars.allAchievementsParent;
+	settings.Add(vars.disableTimeTrialTrinkets, false);
+	settings.Add(vars.requireVRank, false);
+
+	settings.CurrentDefaultParent = vars.hundredpercentParent;
 	settings.Add(vars.labTelejump, false);
 	settings.Add(vars.towerTelejump, false);
 
@@ -304,6 +322,7 @@ startup {
 	settings.Add(vars.dis, false);
 	settings.Add(vars.finalStretch, false);
 	settings.Add(vars.hello, false);
+	settings.Add(vars.commsRelay, false);
 }
 
 init {
@@ -435,6 +454,8 @@ start {
 	if (version == "v2.3.4" || version == "v2.3.6" || version == "v2.4" || version == "v2.4.1" || version == "v2.4.2" || version == "v2.4.3" || version == "v2.4.4") {
 		// Triggers when fade to new mode completes
 		if (!current.fadetomode && old.fadetomode) {
+			vars.isInTimeTrial = false;
+
 			if (current.gotomode == 0) {
 				// New game
 				return settings[vars.newgame];
@@ -478,6 +499,7 @@ start {
 		if (current.timetrialcountdown != old.timetrialcountdown) {
 			if (current.timetrialcountdown <= 30 && old.timetrialcountdown > 30) {
 				// Start when time trial countdown ends
+				vars.isInTimeTrial = true; // if you're doing All Achievements, you really shouldn't be starting your run from a time trial, but we'll set the variable here anyway
 				return settings[vars.ils];
 			}
 		}
@@ -510,66 +532,68 @@ split {
 	if (version == "v2.4.1" || version == "v2.4.2" || version == "v2.4.3" || version == "v2.4.4") {
 		// Trinket splits
 		if (settings[vars.trinkets]) {
-			if (current.collect[0] == 1 && old.collect[0] == 0) {
-				// Trinket - It's a Secret to Nobody
-				return settings[vars.trinketSecretToNobody];
-			} else if (current.collect[1] == 1 && old.collect[1] == 0) {
-				// Trinket - Trench Warfare
-				return settings[vars.trinketTrenchWarfare];
-			} else if (current.collect[9] == 1 && old.collect[9] == 0) {
-				// Trinket - Young Man, It's Worth the Challenge
-				return settings[vars.trinketWorthTheChallenge];
-			} else if (current.collect[14] == 1 && old.collect[14] == 0) {
-				// Trinket - Lab Maze
-				return settings[vars.trinketLabMaze];
-			} else if (current.collect[10] == 1 && old.collect[10] == 0) {
-				// Trinket - Lab Maze
-				return settings[vars.trinketTantalizing];
-			} else if (current.collect[11] == 1 && old.collect[11] == 0) {
-				// Trinket - Purest Unobtainium
-				return settings[vars.trinketUnobtainium];
-			} else if (current.collect[18] == 1 && old.collect[18] == 0) {
-				// Trinket - Victoria
-				return settings[vars.trinketVictoria];
-			} else if (current.collect[7] == 1 && old.collect[7] == 0) {
-				// Trinket - Tower 1
-				return settings[vars.trinketTower1];
-			} else if (current.collect[8] == 1 && old.collect[8] == 0) {
-				// Trinket - Lab Maze
-				return settings[vars.trinketTower2];
-			} else if (current.collect[17] == 1 && old.collect[17] == 0) {
-				// Trinket - Elephant
-				return settings[vars.trinketElephant];
-			} else if (current.collect[2] == 1 && old.collect[2] == 0) {
-				// Trinket - One Way Room
-				return settings[vars.trinketOneWayRoom];
-			} else if (current.collect[3] == 1 && old.collect[3] == 0) {
-				// Trinket - You Just Keep Coming Back
-				return settings[vars.trinketKeepComingBack];
-			} else if (current.collect[4] == 1 && old.collect[4] == 0) {
-				// Trinket - Clarion Call
-				return settings[vars.trinketClarionCall];
-			} else if (current.collect[5] == 1 && old.collect[5] == 0) {
-				// Trinket - Doing Things the Hard Way
-				return settings[vars.trinketDTTHW];
-			} else if (current.collect[6] == 1 && old.collect[6] == 0) {
-				// Trinket - Prize for the Reckless
-				return settings[vars.trinketPrizeForTheReckless];
-			} else if (current.collect[15] == 1 && old.collect[15] == 0) {
-				// Trinket - Cave 1
-				return settings[vars.trinketCave1];
-			} else if (current.collect[16] == 1 && old.collect[16] == 0) {
-				// Trinket - Cave 2
-				return settings[vars.trinketCave2];
-			} else if (current.collect[13] == 1 && old.collect[13] == 0) {
-				// Trinket - Cave 3
-				return settings[vars.trinketCave3];
-			} else if (current.collect[12] == 1 && old.collect[12] == 0) {
-				// Trinket - Edge Games
-				return settings[vars.trinketEdgeGames];
-			} else if (current.collect[19] == 1 && old.collect[19] == 0) {
-				// Trinket - V
-				return settings[vars.trinketV];
+			if (!settings[vars.disableTimeTrialTrinkets] || settings[vars.disableTimeTrialTrinkets] && !vars.isInTimeTrial) {
+				if (current.collect[0] == 1 && old.collect[0] == 0) {
+					// Trinket - It's a Secret to Nobody
+					return settings[vars.trinketSecretToNobody];
+				} else if (current.collect[1] == 1 && old.collect[1] == 0) {
+					// Trinket - Trench Warfare
+					return settings[vars.trinketTrenchWarfare];
+				} else if (current.collect[9] == 1 && old.collect[9] == 0) {
+					// Trinket - Young Man, It's Worth the Challenge
+					return settings[vars.trinketWorthTheChallenge];
+				} else if (current.collect[14] == 1 && old.collect[14] == 0) {
+					// Trinket - Lab Maze
+					return settings[vars.trinketLabMaze];
+				} else if (current.collect[10] == 1 && old.collect[10] == 0) {
+					// Trinket - Lab Maze
+					return settings[vars.trinketTantalizing];
+				} else if (current.collect[11] == 1 && old.collect[11] == 0) {
+					// Trinket - Purest Unobtainium
+					return settings[vars.trinketUnobtainium];
+				} else if (current.collect[18] == 1 && old.collect[18] == 0) {
+					// Trinket - Victoria
+					return settings[vars.trinketVictoria];
+				} else if (current.collect[7] == 1 && old.collect[7] == 0) {
+					// Trinket - Tower 1
+					return settings[vars.trinketTower1];
+				} else if (current.collect[8] == 1 && old.collect[8] == 0) {
+					// Trinket - Lab Maze
+					return settings[vars.trinketTower2];
+				} else if (current.collect[17] == 1 && old.collect[17] == 0) {
+					// Trinket - Elephant
+					return settings[vars.trinketElephant];
+				} else if (current.collect[2] == 1 && old.collect[2] == 0) {
+					// Trinket - One Way Room
+					return settings[vars.trinketOneWayRoom];
+				} else if (current.collect[3] == 1 && old.collect[3] == 0) {
+					// Trinket - You Just Keep Coming Back
+					return settings[vars.trinketKeepComingBack];
+				} else if (current.collect[4] == 1 && old.collect[4] == 0) {
+					// Trinket - Clarion Call
+					return settings[vars.trinketClarionCall];
+				} else if (current.collect[5] == 1 && old.collect[5] == 0) {
+					// Trinket - Doing Things the Hard Way
+					return settings[vars.trinketDTTHW];
+				} else if (current.collect[6] == 1 && old.collect[6] == 0) {
+					// Trinket - Prize for the Reckless
+					return settings[vars.trinketPrizeForTheReckless];
+				} else if (current.collect[15] == 1 && old.collect[15] == 0) {
+					// Trinket - Cave 1
+					return settings[vars.trinketCave1];
+				} else if (current.collect[16] == 1 && old.collect[16] == 0) {
+					// Trinket - Cave 2
+					return settings[vars.trinketCave2];
+				} else if (current.collect[13] == 1 && old.collect[13] == 0) {
+					// Trinket - Cave 3
+					return settings[vars.trinketCave3];
+				} else if (current.collect[12] == 1 && old.collect[12] == 0) {
+					// Trinket - Edge Games
+					return settings[vars.trinketEdgeGames];
+				} else if (current.collect[19] == 1 && old.collect[19] == 0) {
+					// Trinket - V
+					return settings[vars.trinketV];
+				}
 			}
 		}
 
@@ -656,7 +680,35 @@ split {
 			} else if (current.gamestate >= 82 && current.gamestate <= 84) {
 				if (old.gamestate < 82 || old.gamestate > 84) {
 					// Split on completing time trials
-					return settings[vars.ils];
+					vars.isInTimeTrial = false;
+					
+					if (!settings[vars.requireVRank]) {
+						return settings[vars.ils];
+					} else {
+						// We have to calculate whether the player has gotten V rank ourselves here, because there's a chance
+						// that at the time the autosplitter notices gamestate == 82, the game hasn't yet itself processed the
+						// new gamestate and finished calculating the player's rank. Yes, I'm aware this is pretty scuffed.
+						// I won't be happy if this works.
+						bool isUnderParTime = (current.gametimeHours * 3600 + current.gametimeMinutes * 60 + current.gametimeSeconds <= current.timeTrialPar);
+						bool isDeathless = (current.deathCount == 0);
+						
+						int collectedTrinkets = 0;
+
+						for (int i = 0; i < 20; i++) {
+							if (current.collect[i] != 0) {
+								collectedTrinkets++;
+							}
+						}
+
+						bool hasEnoughTrinkets = (collectedTrinkets >= current.timeTrialShinyTarget);
+
+						if (isUnderParTime && isDeathless && hasEnoughTrinkets) {
+							return settings[vars.ils];
+						}
+
+						// After testing, I can confirm this works (splits on V rank and doesn't on anything else), and it splits at the proper time.
+						// (My first idea split a frame late.) As predicted, I'm not happy about this; it's even more scuffed than the 100% check on game complete.
+					}
 				}
 			} else if (current.gamestate == 4050 && current.teleport_to_x == 8 && current.teleport_to_y == 11) {
 				// Split on teleporting to the teleporter under Tower
@@ -664,6 +716,16 @@ split {
 			} else if (current.gamestate == 4020 && current.teleport_to_x == 0 && current.teleport_to_y == 0) {
 				// Split on teleporting to the teleporter under Lab
 				return settings[vars.labTelejump];
+			} else if (current.gamestate == 31) {
+				if (old.gamestate != 31) { // Comms Relay gamestate
+					// Split on activating the cutscene in Comms Relay
+					return settings[vars.commsRelay];
+				}
+			} else if (current.gamestate == 81) { // quit to menu gamestate
+				if (old.gamestate != 81) {
+					// whether or not we were previously in a time trial, we definitely aren't now!
+					vars.isInTimeTrial = false;
+				}
 			}
 		}
 		
@@ -676,6 +738,14 @@ split {
 			if (old.firstTextLineSmall != "Hello!" && old.firstTextLineLarge != "Hello!") {
 				// Split on "Hello!" appearing
 				return settings[vars.hello];
+			}
+		}
+
+		if (current.timetrialcountdown != old.timetrialcountdown) {
+			if (current.timetrialcountdown <= 30 && old.timetrialcountdown > 30) {
+				// Test if the time trial countdown has ended
+				// Use this variable to disable splitting on trinkets in time trials, if the option to do so has been selected
+				vars.isInTimeTrial = true;
 			}
 		}
 
@@ -837,6 +907,7 @@ reset {
 		if (current.menustate != 0 && current.menustate != 2 && current.menustate != 3 && (current.menustate != 1 || !current.ingame_titlemode)) {
 			if (old.menustate == 0 || old.menustate == 2 || old.menustate == 3 || (old.menustate == 1 && old.ingame_titlemode)) {
 				// Reset on exiting to menu
+				vars.isInTimeTrial = false;
 				return settings[vars.menuReset] || settings[vars.ils];
 			}
 		}
