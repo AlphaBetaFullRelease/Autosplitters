@@ -1,3 +1,8 @@
+// Planned new split options to implement:
+//		1. Split on the Comms Relay cutscene (useful for Text Storage No OoB)
+//		2. Disable splitting on trinkets when in time trial (useful for All Achievements)
+//		3. Only split on time trials when V Rank achieved (useful for All Achievements)
+
 state("VVVVVV", "unknown") {
 	// Default state
 }
