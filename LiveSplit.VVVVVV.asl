@@ -1,6 +1,6 @@
 // Planned new split options to implement:
 //		1. Split on the Comms Relay cutscene (useful for Text Storage No OoB) - DONE
-//		2. Disable splitting on trinkets when in time trial (useful for All Achievements) - TESTING
+//		2. Disable splitting on trinkets when in time trial (useful for All Achievements) - DONE
 //		3. Only split on time trials when V Rank achieved (useful for All Achievements)
 
 state("VVVVVV", "unknown") {
@@ -455,6 +455,7 @@ start {
 			} else if (current.gotomode >= 3 && current.gotomode <= 8) {
 				// Time trials
 				// Time trial starting behaviour is done elsewhere
+				vars.isInTimeTrial = true;
 				return false;
 			} else if (current.gotomode >= 9 && current.gotomode <= 10) {
 				// No death mode (with or without cutscenes)
@@ -680,9 +681,14 @@ split {
 				// Split on teleporting to the teleporter under Lab
 				return settings[vars.labTelejump];
 			} else if (current.gamestate == 31) {
-				if (old.gamestate != 31) {
+				if (old.gamestate != 31) { // Comms Relay gamestate
 					// Split on activating the cutscene in Comms Relay
 					return settings[vars.commsRelay];
+				}
+			} else if (current.gamestate == 81) { // quit to menu gamestate
+				if (old.gamestate != 81) {
+					// whether or not we were previously in a time trial, we definitely aren't now!
+					vars.isInTimeTrial = false;
 				}
 			}
 		}
@@ -696,6 +702,14 @@ split {
 			if (old.firstTextLineSmall != "Hello!" && old.firstTextLineLarge != "Hello!") {
 				// Split on "Hello!" appearing
 				return settings[vars.hello];
+			}
+		}
+
+		if (current.timetrialcountdown != old.timetrialcountdown) {
+			if (current.timetrialcountdown <= 30 && old.timetrialcountdown > 30) {
+				// Test if the time trial countdown has ended
+				// Use this variable to disable splitting on trinkets in time trials, if the option to do so has been selected
+				vars.isInTimeTrial = true;
 			}
 		}
 
