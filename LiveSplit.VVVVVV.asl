@@ -1,5 +1,5 @@
 // Planned new split options to implement:
-//		1. Split on the Comms Relay cutscene (useful for Text Storage No OoB)
+//		1. Split on the Comms Relay cutscene (useful for Text Storage No OoB) - DONE
 //		2. Disable splitting on trinkets when in time trial (useful for All Achievements)
 //		3. Only split on time trials when V Rank achieved (useful for All Achievements)
 
@@ -671,7 +671,7 @@ split {
 			} else if (current.gamestate == 4020 && current.teleport_to_x == 0 && current.teleport_to_y == 0) {
 				// Split on teleporting to the teleporter under Lab
 				return settings[vars.labTelejump];
-			} else if (current.gamastate == 31) {
+			} else if (current.gamestate == 31) {
 				if (old.gamestate != 31) {
 					// Split on activating the cutscene in Comms Relay
 					return settings[vars.commsRelay];
