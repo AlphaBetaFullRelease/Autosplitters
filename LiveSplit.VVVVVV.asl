@@ -1,7 +1,7 @@
 // Planned new split options to implement:
 //		1. Split on the Comms Relay cutscene (useful for Text Storage No OoB) - DONE
 //		2. Disable splitting on trinkets when in time trial (useful for All Achievements) - DONE
-//		3. Only split on time trials when V Rank achieved (useful for All Achievements)
+//		3. Only split on time trials when V Rank achieved (useful for All Achievements) - IN PROGRESS
 
 state("VVVVVV", "unknown") {
 	// Default state
@@ -221,8 +221,11 @@ startup {
 	vars.labTelejump = "Split on teleporting to the teleporter under Lab";
 	vars.towerTelejump = "Split on teleporting to the teleporter under Tower";
 
+	vars.allAchievementsParent = "Settings pertaining to All Achievements";
+	vars.disableTimeTrialTrinkets = "Disable splitting on trinkets when in a time trial (v2.4.1+ currently)";
+	vars.requireVRank = "Only split on completing time trials when V Rank is achieved (v2.4.4+ currently)";
+
 	vars.trinkets = "Split on collecting trinkets";
-	vars.disableTimeTrialTrinkets = "Disable splitting on trinkets when in a time trial (for All Achievements) (v2.4.1+ currently)";
 	vars.trinketSecretToNobody = "Split on collecting the \"It's a Secret to Nobody\" trinket";
 	vars.trinketTrenchWarfare = "Split on collecting the \"Trench Warfare\" trinket";
 	vars.trinketWorthTheChallenge = "Split on collecting the \"Young Man, It's Worth the Challenge\" trinket";
@@ -278,7 +281,6 @@ startup {
 	settings.CurrentDefaultParent = vars.hundredpercentParent;
 	settings.Add(vars.trinkets, false);
 	settings.CurrentDefaultParent = vars.trinkets;
-	settings.Add(vars.disableTimeTrialTrinkets, false);
 	settings.Add(vars.trinketSecretToNobody, false);
 	settings.Add(vars.trinketTrenchWarfare, false);
 	settings.Add(vars.trinketWorthTheChallenge, false);
@@ -299,6 +301,11 @@ startup {
 	settings.Add(vars.trinketCave3, false);
 	settings.Add(vars.trinketEdgeGames, false);
 	settings.Add(vars.trinketV, false);
+
+	settings.CurrentDefaultParent = vars.hundredpercentParent;
+	settings.Add(vars.allAchievementsParent, false);
+	settings.CurrentDefaultParent = vars.allAchievementsParent;
+	settings.Add(vars.disableTimeTrialTrinkets, false);
 
 	settings.CurrentDefaultParent = vars.hundredpercentParent;
 	settings.Add(vars.labTelejump, false);
