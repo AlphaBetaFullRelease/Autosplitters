@@ -1,7 +1,7 @@
 // Planned new split options to implement:
 //		1. Split on the Comms Relay cutscene (useful for Text Storage No OoB) - DONE
 //		2. Disable splitting on trinkets when in time trial (useful for All Achievements) - DONE
-//		3. Only split on time trials when V Rank achieved (useful for All Achievements) - IN PROGRESS
+//		3. Only split on time trials when V Rank achieved (useful for All Achievements) - TESTING
 
 state("VVVVVV", "unknown") {
 	// Default state
@@ -27,6 +27,7 @@ state("VVVVVV", "v2.4.4") {
 	int teleport_to_x : "VVVVVV.exe", 0x410C00;
 	int teleport_to_y : "VVVVVV.exe", 0x410C04;
 	byte100 collect : "VVVVVV.exe", 0x221790;
+	int timeTrialRank : "VVVVVV.exe", 0x410D30;
 	
 	// Variables for resetting
 	int menustate : "VVVVVV.exe", 0x410B5C; // actually called gamestate in source
@@ -306,6 +307,7 @@ startup {
 	settings.Add(vars.allAchievementsParent, false);
 	settings.CurrentDefaultParent = vars.allAchievementsParent;
 	settings.Add(vars.disableTimeTrialTrinkets, false);
+	settings.Add(vars.requireVRank, false);
 
 	settings.CurrentDefaultParent = vars.hundredpercentParent;
 	settings.Add(vars.labTelejump, false);
@@ -496,7 +498,7 @@ start {
 		if (current.timetrialcountdown != old.timetrialcountdown) {
 			if (current.timetrialcountdown <= 30 && old.timetrialcountdown > 30) {
 				// Start when time trial countdown ends
-				vars.isInTimeTrial = true;
+				vars.isInTimeTrial = true; // if you're doing All Achievements, you really shouldn't be starting your run from a time trial, but we'll set the variable here anyway
 				return settings[vars.ils];
 			}
 		}
@@ -678,7 +680,16 @@ split {
 				if (old.gamestate < 82 || old.gamestate > 84) {
 					// Split on completing time trials
 					vars.isInTimeTrial = false;
-					return settings[vars.ils];
+					
+					if (!settings[vars.requireVRank]) {
+						return settings[vars.ils];
+					}
+				} else if (old.gamestate == 82) { // evil check just to make sure timetrialrank has been updated before we try to read its new value. could be inconsistent, might be better to check for gamestate 83 instead
+					print("The time trial rank is " + current.timeTrialRank); // REMOVE ME!!
+					
+					if (current.timeTrialRank >= 3) { // personally, i think this check should be == 3, but the game checks >= 3 to determine whether or not to award V rank, so the same should be done in the autosplitter
+						return settings[vars.ils];
+					}
 				}
 			} else if (current.gamestate == 4050 && current.teleport_to_x == 8 && current.teleport_to_y == 11) {
 				// Split on teleporting to the teleporter under Tower
