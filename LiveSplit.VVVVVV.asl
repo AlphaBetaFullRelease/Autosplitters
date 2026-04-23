@@ -455,7 +455,6 @@ start {
 			} else if (current.gotomode >= 3 && current.gotomode <= 8) {
 				// Time trials
 				// Time trial starting behaviour is done elsewhere
-				vars.isInTimeTrial = true;
 				return false;
 			} else if (current.gotomode >= 9 && current.gotomode <= 10) {
 				// No death mode (with or without cutscenes)
