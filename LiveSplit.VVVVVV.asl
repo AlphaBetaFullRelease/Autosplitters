@@ -26,6 +26,7 @@ state("VVVVVV", "v2.4.4") {
 	int teleport_to_x : "VVVVVV.exe", 0x410C00; // game.teleport_to_x
 	int teleport_to_y : "VVVVVV.exe", 0x410C04; // game.teleport_to_y
 	byte100 collect : "VVVVVV.exe", 0x221790; // obj.collect (obj = entityclass)
+	bool noDeathMode : "VVVVVV.exe", 0x410CDC; // game.nodeathmode
 
 	// Time trial variables for calculating V rank
 	// Why not just read the timetrialrank variable? In short, because of race conditions.
@@ -230,6 +231,7 @@ startup {
 	vars.allAchievementsParent = "Settings pertaining to All Achievements";
 	vars.disableTimeTrialTrinkets = "Disable splitting on trinkets when in a Time Trial (v2.4.1+)";
 	vars.requireVRank = "Only split on completing time trials when V Rank is achieved (v2.4.4+)";
+	vars.motu = "In NDM, split on attaining MotU instead of Game Complete (v2.4.4+)";
 
 	vars.trinkets = "Split on collecting trinkets";
 	vars.trinketSecretToNobody = "Split on collecting the \"It's a Secret to Nobody\" trinket";
@@ -313,6 +315,7 @@ startup {
 	settings.CurrentDefaultParent = vars.allAchievementsParent;
 	settings.Add(vars.disableTimeTrialTrinkets, false);
 	settings.Add(vars.requireVRank, false);
+	settings.Add(vars.motu, false);
 
 	settings.CurrentDefaultParent = vars.hundredpercentParent;
 	settings.Add(vars.labTelejump, false);
@@ -674,7 +677,7 @@ split {
 						}
 					}
 
-					if (allTrinketsKludge) {
+					if (allTrinketsKludge && (!settings[vars.motu] || settings[vars.motu] && !current.noDeathMode)) {
 						vars.isGameComplete = settings[vars.gameComplete];
 					}
 				}
@@ -738,6 +741,10 @@ split {
 				if (old.gamestate != 81) {
 					// whether or not we were previously in a time trial, we definitely aren't now!
 					vars.isInTimeTrial = false;
+				}
+			} else if (current.gamestate == 3510) { // trophies awarded
+				if (old.gamestate != 3510) {
+					return settings[vars.motu] && current.noDeathMode;
 				}
 			}
 		}
