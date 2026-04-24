@@ -4,39 +4,39 @@ state("VVVVVV", "unknown") {
 
 state("VVVVVV", "v2.4.4") {
 	// Game time variables
-	int gametimeFrames : "VVVVVV.exe", 0x410BA0;
-	int gametimeSeconds : "VVVVVV.exe", 0x410BA4;
-	int gametimeMinutes : "VVVVVV.exe", 0x410BA8;
-	int gametimeHours : "VVVVVV.exe", 0x410BAC;
+	int gametimeFrames : "VVVVVV.exe", 0x410BA0; // game.frames
+	int gametimeSeconds : "VVVVVV.exe", 0x410BA4; // game.seconds
+	int gametimeMinutes : "VVVVVV.exe", 0x410BA8; // game.minutes
+	int gametimeHours : "VVVVVV.exe", 0x410BAC; // game.hours
 
 	// Variables for starting the timer
-	bool fadetomode : "VVVVVV.exe", 0x225A34;
-	int gotomode : "VVVVVV.exe", 0x225A38;
-	int timetrialcountdown : "VVVVVV.exe", 0x410D18;
+	bool fadetomode : "VVVVVV.exe", 0x225A34; // see README at https://github.com/KSSBrawl/vvvvvv-ida-includes
+	int gotomode : "VVVVVV.exe", 0x225A38; // see above
+	int timetrialcountdown : "VVVVVV.exe", 0x410D18; // game.timetrialcountdown
 
 	// Variables for stopping the timer on Game Complete
-	int saveFrames : "VVVVVV.exe", 0x410BD0;
-	int saveSeconds : "VVVVVV.exe", 0x410BD4;
+	int saveFrames : "VVVVVV.exe", 0x410BD0; // game.saveframes
+	int saveSeconds : "VVVVVV.exe", 0x410BD4; // game.saveseconds
 
 	// Variables for splitting
-	bool finalStretch : "VVVVVV.exe", 0x4136C9;
-	int gamestate : "VVVVVV.exe", 0x410B50; // actually called state in source
-	string255 firstTextLineSmall : "VVVVVV.exe", 0x233980, 0x0;
-	string255 firstTextLineLarge : "VVVVVV.exe", 0x233980, 0x0, 0x0;
-	int teleport_to_x : "VVVVVV.exe", 0x410C00;
-	int teleport_to_y : "VVVVVV.exe", 0x410C04;
-	byte100 collect : "VVVVVV.exe", 0x221790;
+	bool finalStretch : "VVVVVV.exe", 0x4136C9; // map.finalstretch
+	int gamestate : "VVVVVV.exe", 0x410B50; // game.state
+	string255 firstTextLineSmall : "VVVVVV.exe", 0x233980, 0x0; // script.txt (script = scriptclass)
+	string255 firstTextLineLarge : "VVVVVV.exe", 0x233980, 0x0, 0x0; // script.text
+	int teleport_to_x : "VVVVVV.exe", 0x410C00; // game.teleport_to_x
+	int teleport_to_y : "VVVVVV.exe", 0x410C04; // game.teleport_to_y
+	byte100 collect : "VVVVVV.exe", 0x221790; // obj.collect (obj = entityclass)
 
 	// Time trial variables for calculating V rank
 	// Why not just read the timetrialrank variable? In short, because of race conditions.
 	// We can't reliably read from any variables which are affected by gamestate 82 while also listening out for gamestate 82.
-	int deathCount : "VVVVVV.exe", 0x410B94;
-	int timeTrialShinyTarget : "VVVVVV.exe", 0x410D1C;
-	int timeTrialPar : "VVVVVV.exe", 0x410D24;
+	int deathCount : "VVVVVV.exe", 0x410B94; // game.deathcount
+	int timeTrialShinyTarget : "VVVVVV.exe", 0x410D1C; // game.timetrialshinytarget
+	int timeTrialPar : "VVVVVV.exe", 0x410D24; // game.timetrialpar
 
 	// Variables for resetting
-	int menustate : "VVVVVV.exe", 0x410B5C; // actually called gamestate in source
-	bool ingame_titlemode : "VVVVVV.exe", 0x411566;
+	int menustate : "VVVVVV.exe", 0x410B5C; // game.gamestate
+	bool ingame_titlemode : "VVVVVV.exe", 0x411566; // game.ingame_titlemode
 }
 
 state("VVVVVV", "v2.4.3") {
