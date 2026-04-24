@@ -14,6 +14,10 @@ state("VVVVVV", "v2.4.4") {
 	int gotomode : "VVVVVV.exe", 0x225A38;
 	int timetrialcountdown : "VVVVVV.exe", 0x410D18;
 
+	// Variables for stopping the timer on Game Complete
+	int saveFrames : "VVVVVV.exe", 0x410BD0;
+	int saveSeconds : "VVVVVV.exe", 0x410BD4;
+
 	// Variables for splitting
 	bool finalStretch : "VVVVVV.exe", 0x4136C9;
 	int gamestate : "VVVVVV.exe", 0x410B50; // actually called state in source
@@ -455,6 +459,7 @@ start {
 		// Triggers when fade to new mode completes
 		if (!current.fadetomode && old.fadetomode) {
 			vars.isInTimeTrial = false;
+			vars.isGameComplete = false;
 
 			if (current.gotomode == 0) {
 				// New game
@@ -530,6 +535,13 @@ start {
 
 split {
 	if (version == "v2.4.1" || version == "v2.4.2" || version == "v2.4.3" || version == "v2.4.4") {
+		// In order to fix the bug where the timer often stopped a frame late, I forced the autosplitter to wait an extra cycle before actually stopping
+		// the timer. This is so that the gameTime method can be run one more time before the timer stops, in which it will switch over to displaying
+		// the save file's saved time (set in gamestate 3502) instead of the in-game time.
+		if (vars.isGameComplete) {
+			return true;
+		}
+
 		// Trinket splits
 		if (settings[vars.trinkets]) {
 			if (!settings[vars.disableTimeTrialTrinkets] || settings[vars.disableTimeTrialTrinkets] && !vars.isInTimeTrial) {
@@ -662,7 +674,7 @@ split {
 					}
 
 					if (allTrinketsKludge) {
-						return settings[vars.gameComplete];
+						vars.isGameComplete = settings[vars.gameComplete];
 					}
 				}
 			} else if (current.gamestate == 33) {
@@ -962,7 +974,13 @@ reset {
 }
 
 gameTime {
-	if (version == "v2.3.4" || version == "v2.3.6" || version == "v2.4" || version == "v2.4.1" || version == "v2.4.2" || version == "v2.4.3" || version == "v2.4.4") {
+	if (version == "v2.4.4") { // we separate out v2.4.4 because it's the only version so far in which saveSeconds and saveFrames are stored to the state
+		if (vars.isGameComplete) { // evil hack to get the timer to show the right time on game complete (after gamestate 3503)
+			return new TimeSpan(0, current.saveSeconds / 3600, current.saveSeconds % 3600 / 60, current.saveSeconds % 60, 100 * current.saveFrames / 3);
+		} else {
+			return new TimeSpan(0, current.gametimeHours, current.gametimeMinutes, current.gametimeSeconds, 100*current.gametimeFrames/3);
+		}
+	} else if (version == "v2.3.4" || version == "v2.3.6" || version == "v2.4" || version == "v2.4.1" || version == "v2.4.2" || version == "v2.4.3") {
 		return new TimeSpan(0, current.gametimeHours, current.gametimeMinutes, current.gametimeSeconds, 100*current.gametimeFrames/3);
 	} else if (version == "v2.0" || version == "v2.2") {
 		// Legacy versions
