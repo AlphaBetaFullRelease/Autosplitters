@@ -539,6 +539,7 @@ split {
 		// the timer. This is so that the gameTime method can be run one more time before the timer stops, in which it will switch over to displaying
 		// the save file's saved time (set in gamestate 3502) instead of the in-game time.
 		if (vars.isGameComplete) {
+			vars.isGameComplete = false;
 			return true;
 		}
 
