@@ -22,7 +22,7 @@ state("VVVVVV", "v2.4.4") {
 	bool finalStretch : "VVVVVV.exe", 0x4136C9; // map.finalstretch
 	int gamestate : "VVVVVV.exe", 0x410B50; // game.state
 	string255 firstTextLineSmall : "VVVVVV.exe", 0x233980, 0x0; // script.txt.Myfirst_ (script = scriptclass)
-	string255 firstTextLineLarge : "VVVVVV.exe", 0x233980, 0x0, 0x0; // script.text.Myfirst_
+	string255 firstTextLineLarge : "VVVVVV.exe", 0x233980, 0x0, 0x0; // script.txt.Myfirst_
 	int teleport_to_x : "VVVVVV.exe", 0x410C00; // game.teleport_to_x
 	int teleport_to_y : "VVVVVV.exe", 0x410C04; // game.teleport_to_y
 	byte100 collect : "VVVVVV.exe", 0x221790; // obj.collect (obj = entityclass)
