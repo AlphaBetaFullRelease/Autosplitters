@@ -466,6 +466,7 @@ start {
 		if (!current.fadetomode && old.fadetomode) {
 			vars.isInTimeTrial = false;
 			vars.isGameComplete = false;
+			vars.trinketCooldown = 0;
 
 			if (current.gotomode == 0) {
 				// New game
@@ -549,68 +550,94 @@ split {
 			return true;
 		}
 
+		// terrible solution if this works. by the way. it's more of a bandaid fix than an attempt at diagnosing the cause of double splitting on trinkets
+		// but idk why this happens, since in my experience, it only happens very occasionally. if you watch a video of the double split bug occurring,
+		// you'll notice it splits rapidly back-to-back. this suggests that the check for current.collect[x] == 1 && old.collect[x] == 0 is getting
+		// triggered twice, somehow. which makes no sense to me, and as such, idk how to fix that.
+		vars.trinketCooldown = (vars.trinketCooldown > 0) ? vars.trinketCooldown - 1 : 0;
+
 		// Trinket splits
 		if (settings[vars.trinkets]) {
-			if (!settings[vars.disableTimeTrialTrinkets] || settings[vars.disableTimeTrialTrinkets] && !vars.isInTimeTrial) {
+			if (!settings[vars.disableTimeTrialTrinkets] || settings[vars.disableTimeTrialTrinkets] && !vars.isInTimeTrial && vars.trinketCooldown == 0) {
 				if (current.collect[0] == 1 && old.collect[0] == 0) {
 					// Trinket - It's a Secret to Nobody
+					vars.trinketCooldown = 2; // setting this to 2 will make the autosplitter stall for only 1 cycle, since it's decremented before the if trinkets block
 					return settings[vars.trinketSecretToNobody];
 				} else if (current.collect[1] == 1 && old.collect[1] == 0) {
 					// Trinket - Trench Warfare
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketTrenchWarfare];
 				} else if (current.collect[9] == 1 && old.collect[9] == 0) {
 					// Trinket - Young Man, It's Worth the Challenge
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketWorthTheChallenge];
 				} else if (current.collect[14] == 1 && old.collect[14] == 0) {
 					// Trinket - Lab Maze
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketLabMaze];
 				} else if (current.collect[10] == 1 && old.collect[10] == 0) {
 					// Trinket - Lab Maze
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketTantalizing];
 				} else if (current.collect[11] == 1 && old.collect[11] == 0) {
 					// Trinket - Purest Unobtainium
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketUnobtainium];
 				} else if (current.collect[18] == 1 && old.collect[18] == 0) {
 					// Trinket - Victoria
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketVictoria];
 				} else if (current.collect[7] == 1 && old.collect[7] == 0) {
 					// Trinket - Tower 1
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketTower1];
 				} else if (current.collect[8] == 1 && old.collect[8] == 0) {
 					// Trinket - Lab Maze
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketTower2];
 				} else if (current.collect[17] == 1 && old.collect[17] == 0) {
 					// Trinket - Elephant
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketElephant];
 				} else if (current.collect[2] == 1 && old.collect[2] == 0) {
 					// Trinket - One Way Room
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketOneWayRoom];
 				} else if (current.collect[3] == 1 && old.collect[3] == 0) {
 					// Trinket - You Just Keep Coming Back
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketKeepComingBack];
 				} else if (current.collect[4] == 1 && old.collect[4] == 0) {
 					// Trinket - Clarion Call
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketClarionCall];
 				} else if (current.collect[5] == 1 && old.collect[5] == 0) {
 					// Trinket - Doing Things the Hard Way
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketDTTHW];
 				} else if (current.collect[6] == 1 && old.collect[6] == 0) {
 					// Trinket - Prize for the Reckless
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketPrizeForTheReckless];
 				} else if (current.collect[15] == 1 && old.collect[15] == 0) {
 					// Trinket - Cave 1
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketCave1];
 				} else if (current.collect[16] == 1 && old.collect[16] == 0) {
 					// Trinket - Cave 2
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketCave2];
 				} else if (current.collect[13] == 1 && old.collect[13] == 0) {
 					// Trinket - Cave 3
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketCave3];
 				} else if (current.collect[12] == 1 && old.collect[12] == 0) {
 					// Trinket - Edge Games
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketEdgeGames];
 				} else if (current.collect[19] == 1 && old.collect[19] == 0) {
 					// Trinket - V
+					vars.trinketCooldown = 2;
 					return settings[vars.trinketV];
 				}
 			}
