@@ -260,6 +260,7 @@ startup {
 	vars.customLevel = "Settings pertaining to custom levels";
 	vars.customLevelStart = "Start on beginning a custom level (v2.3.4+)";
 	vars.customLevelCrewMember = "Split on collecting a crew member in a custom level (v.2.4.1+)";
+	vars.customLevelTrinkets = "Split on collecting a trinket in a custom level (v2.4.1+)";
 
 	vars.miscellaneousParent = "Miscellaneous settings";
 	vars.gameComplete = "Split on game completion";
@@ -333,6 +334,7 @@ startup {
 	settings.CurrentDefaultParent = vars.customLevel;
 	settings.Add(vars.customLevelStart, false);
 	settings.Add(vars.customLevelCrewMember, false);
+	settings.Add(vars.customLevelTrinkets, false);
 
 	settings.CurrentDefaultParent = null;
 	settings.Add(vars.miscellaneousParent, true);
@@ -704,7 +706,7 @@ split {
 				if (old.gamestate < 1000 || old.gamestate > 1003) {
 					// Split on collecting trinkets
 					// Note: This might be unreliable on laggy computers (when doing perfect text box skips)
-					return settings[vars.trinkets];
+					return settings[vars.customLevelTrinkets];
 				}
 			} else if (current.gamestate >= 82 && current.gamestate <= 84) {
 				if (old.gamestate < 82 || old.gamestate > 84) {
