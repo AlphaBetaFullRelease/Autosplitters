@@ -257,6 +257,10 @@ startup {
 	vars.trinketEdgeGames = "Split on collecting the \"Edge Games\" trinket";
 	vars.trinketV = "Split on collecting the \"V\" trinket";
 
+	vars.customLevel = "Settings pertaining to custom levels";
+	vars.customLevelStart = "Start on beginning a custom level (v2.3.4+)";
+	vars.customLevelCrewMember = "Split on collecting a crew member in a custom level (v.2.4.1+)";
+
 	vars.miscellaneousParent = "Miscellaneous settings";
 	vars.gameComplete = "Split on game completion";
 	vars.gameCompleteAndAllTrinkets = "Only split if all 20 trinkets have been collected (for 100%)";
@@ -323,6 +327,12 @@ startup {
 	settings.CurrentDefaultParent = vars.hundredpercentParent;
 	settings.Add(vars.labTelejump, false);
 	settings.Add(vars.towerTelejump, false);
+
+	settings.CurrentDefaultParent = null;
+	settings.Add(vars.customLevel, false);
+	settings.CurrentDefaultParent = vars.customLevel;
+	settings.Add(vars.customLevelStart, false);
+	settings.Add(vars.customLevelCrewMember, false);
 
 	settings.CurrentDefaultParent = null;
 	settings.Add(vars.miscellaneousParent, true);
@@ -497,7 +507,7 @@ start {
 				return false;
 			} else if (current.gotomode == 22) {
 				// Play level (in game)
-				return false;
+				return settings[vars.customLevelStart];
 			} else if (current.gotomode == 23) {
 				// Continue custom level
 				return false;
@@ -748,6 +758,10 @@ split {
 			} else if (current.gamestate == 3510) { // trophies awarded
 				if (old.gamestate != 3510) {
 					return settings[vars.motu] && current.noDeathMode;
+				}
+			} else if (current.gamestate >= 1010 && current.gamestate <= 1015) { // collecting crew member in custom level
+				if (old.gamestate < 1010 || old.gamestate > 1015) {
+					return settings[vars.customLevelCrewMember];
 				}
 			}
 		}
